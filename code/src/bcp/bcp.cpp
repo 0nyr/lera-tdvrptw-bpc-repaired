@@ -5,6 +5,7 @@
 //
 
 #include "bcp/bcp.h"
+#include "ms56_events.h"
 
 #include <climits>
 
@@ -33,8 +34,9 @@ BCP::BCP(const Digraph& D, SPF* spf) : D(D), spf(spf), z_lb(-INFTY), z_ub(INFTY)
 			int cuts_added = 0;
 			while (this->spf->cuts.size() < cut_limit)
 			{
+				if (ms56::remaining()<=0) {cg_execution_log->status=CGStatus::TimeLimitReached;break;}
 				Stopwatch cut_rolex(true);
-				lp_solver.time_limit = time_limit - iteration_rolex.Peek();
+				lp_solver.time_limit = Duration(std::max(0.0,ms56::remaining()),DurationUnit::Seconds);
 				auto lp_log = lp_solver.Solve(this->spf->formulation, {LPOption::Incumbent});
 				if (lp_log.status != LPStatus::Optimum) break;
 				bool added_cuts = SeparateCuts(lp_log.incumbent);
@@ -74,6 +76,7 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 	Node* root = new Node{0, INFTY, {}};
 	ProcessNode(root);
 	log.root_time = rolex.Peek();
+	if (log.root_lp_value.IsSet()) { z_lb=*log.root_lp_value; ms56::emit({{"event","bound"},{"phase","exact"},{"source","root_complete"},{"bound_validity","native_model_audit_pending"},{"global_lb",z_lb}}); }
 
 	if (!q.empty())
 	{
@@ -89,6 +92,7 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 		while (!q.empty())
 		{
 			if (log.status == BCStatus::TimeLimitReached || log.status == BCStatus::MemoryLimitReached) break;
+			if (ms56::remaining() <= 0) { log.status=BCStatus::TimeLimitReached; break; }
 			if (log.nodes_closed >= node_limit) { log.status = BCStatus::NodeLimitReached; break; }
 			
 			// Pop node.
@@ -105,9 +109,10 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 				// Output to console.
 				if (tstream.RegisterAttempt()) tstream.WriteRow({STR(rolex.Peek()), STR(log.nodes_closed), STR(log.nodes_open), STR(z_lb), STR(z_ub), STR(spf->formulation->VariableCount())});
 			}
+			if (log.status == BCStatus::DidNotStart && !q.empty()) { z_lb=std::max(z_lb,std::min(z_ub,q.top()->bound)); ms56::emit({{"event","bound"},{"phase","exact"},{"source","frontier"},{"bound_validity","native_model_audit_pending"},{"global_lb",z_lb}}); }
 			delete n;
 		}
-		if (q.empty()) z_lb = z_ub;
+		if (q.empty() && log.status == BCStatus::DidNotStart) z_lb = z_ub;
 		
 		tstream.WriteRow({STR(rolex.Peek()), STR(log.nodes_closed), STR(log.nodes_open), STR(z_lb), STR(z_ub), STR(spf->formulation->VariableCount())});
 		
@@ -122,6 +127,7 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 		z_lb = z_ub;
 	}
 	log.time = rolex.Peek();
+	ms56::emit({{"event",log.status==BCStatus::Optimum && z_ub<INFTY ? "closure":"phase"},{"phase","exact_terminated"},{"status",STR(log.status)},{"proof_acceptance","unverified"},{"restricted_master_infeasible",restricted_master_infeasible},{"unbranched_fractional",unbranched_fractional},{"cg_optimum_count",cg_optimum_count},{"certified_cg_optimum_count",certified_cg_optimum_count},{"global_lb",z_lb>-INFTY && z_lb<INFTY ? nlohmann::json(z_lb):nlohmann::json(nullptr)}});
 	
 	// Set bounds and solutions found.
 	if (z_ub != INFTY) log.best_int_value = z_ub;
@@ -141,7 +147,11 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 double BCP::EstimateBound(Node* node)
 {
 	spf->SetForbiddenArcs(node->A);
+	lp_solver.time_limit=Duration(std::max(0.0,ms56::remaining()),DurationUnit::Seconds);
 	auto lp_log = lp_solver.Solve(spf->formulation);
+	if (lp_log.status == LPStatus::TimeLimitReached) log.status=BCStatus::TimeLimitReached;
+	if (lp_log.status == LPStatus::MemoryLimitReached) log.status=BCStatus::MemoryLimitReached;
+	if(lp_log.status==LPStatus::Infeasible) ++restricted_master_infeasible;
 	return lp_log.status == LPStatus::Optimum ? *lp_log.incumbent_value : INFTY;
 }
 
@@ -150,7 +160,8 @@ void BCP::ProcessNode(Node* node)
 	node_seq++;
 	spf->SetForbiddenArcs(node->A);
 	cg_solver.screen_output = node->index == 0 ? &clog : nullptr;
-	cg_solver.time_limit = time_limit - rolex.Peek();
+	cg_solver.time_limit = Duration(std::max(0.0,ms56::remaining()),DurationUnit::Seconds);
+	final_pricing_complete=false;
 	auto cg_log = cg_solver.Solve(spf->formulation, {CGOption::IterationsInformation});
 	
 	*log.lp_time += cg_log.lp_time;
@@ -158,6 +169,8 @@ void BCP::ProcessNode(Node* node)
 	// Update node.
 	if (cg_log.status == CGStatus::Optimum)
 	{
+		++cg_optimum_count;
+		if (final_pricing_complete) ++certified_cg_optimum_count;
 		node->bound = cg_log.incumbent_value;
 		node->opt = *cg_log.incumbent;
 	}
@@ -188,6 +201,7 @@ void BCP::ProcessNode(Node* node)
 	}
 	else if (cg_log.status == CGStatus::Infeasible)
 	{
+		++restricted_master_infeasible;
 		log.nodes_closed++;
 		delete node;
 	}
@@ -200,6 +214,7 @@ void BCP::ProcessNode(Node* node)
 			{
 				z_ub = node->bound;
 				ub = node->opt;
+				ms56::candidate(VRPSolution(z_ub,spf->InterpretSolution(ub)),"BCP");
 			}
 			log.nodes_closed++;
 			delete node;
@@ -242,12 +257,14 @@ void BCP::BranchNode(Node* node)
 	
 	// Calculate all candidate estimate bounds and keep the best one.
 	vector<Node> best_candidate;
+	if(x_most.empty()) ++unbranched_fractional;
 	if (!x_most.empty())
 	{
 		double best_estimate = -INFTY;
 		
 		for (Arc e: x_most)
 		{
+			if (ms56::remaining()<=0) {log.status=BCStatus::TimeLimitReached; break;}
 			vector<Arc> A = node->A; // infeasible arcs.
 			
 			// Left node (x_e = 0).
@@ -275,19 +292,22 @@ void BCP::BranchNode(Node* node)
 	
 	*log.branching_time += rolex_branch.Pause();
 	// Process new children to the queue.
-	for (Node& candidate: best_candidate)
+	for (Node& candidate: best_candidate) {
+		if (log.status==BCStatus::TimeLimitReached || log.status==BCStatus::MemoryLimitReached) break;
 		ProcessNode(new Node(candidate));
+	}
 }
 
 void BCP::FreezeHeuristic()
 {
 	BCSolver bc_solver;
-	bc_solver.time_limit = time_limit;
+	bc_solver.time_limit = Duration(std::max(0.0,ms56::remaining()),DurationUnit::Seconds);
 	auto bc_log = bc_solver.Solve(spf->formulation, {BCOption::BestIntSolution});
 	if (bc_log.status == BCStatus::Optimum && bc_log.best_int_value < z_ub)
 	{
 		z_ub = bc_log.best_int_value;
 		ub = *bc_log.best_int_solution;
+		ms56::candidate(VRPSolution(z_ub,spf->InterpretSolution(ub)),"FreezeHeuristic");
 	}
 }
 

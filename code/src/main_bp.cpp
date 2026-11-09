@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <climits>
+#include "ms56_events.h"
 
 #include <goc/goc.h>
 
@@ -93,7 +94,7 @@ int main(int argc, char** argv)
 			spf.AddRoute(vrp.BestDurationRoute({vrp.o, i, vrp.d}));
 
 		BCP bcp(vrp.D, &spf);
-		bcp.time_limit = time_limit;
+		bcp.time_limit = Duration(std::max(0.0,ms56::remaining()),DurationUnit::Seconds);
 		bcp.cut_limit = cut_limit;
 		bcp.node_limit = node_limit;
 
@@ -107,19 +108,24 @@ int main(int argc, char** argv)
 		lbl.sort_by_cost = sort_by_cost;
 		lbl.symmetric = symmetric;
 
+		int exact_calls=0, exact_finished=0;
 		int heuristic_level = 0; // 0: relax cost, 1: relax elementarity, 2: exact
 		int max_level = exact_labeling ? 2 : 1; // exact
 		vector<string> level_name = {"Heuristic Cost", "Heuristic Elementarity", "Exact"};
 		bcp.pricing_solver = [&](const PricingProblem &pricing_problem, int node_number, Duration tlimit,
 								 CGExecutionLog *cg_execution_log) {
 			Stopwatch iteration_rolex(true);
+			bcp.final_pricing_complete=false;
 			vector<Route> R;
 			while (heuristic_level <= max_level)
 			{
-				lbl.time_limit = tlimit - iteration_rolex.Peek();
+				lbl.time_limit = Duration(std::max(0.0,ms56::remaining()),DurationUnit::Seconds);
 				lbl.relax_cost_check = heuristic_level == 0;
 				lbl.relax_elementary_check = heuristic_level == 1;
+				if (heuristic_level==2) ++exact_calls;
 				auto lbl_log = lbl.Run(pricing_problem, &R);
+				if (heuristic_level==2 && lbl_log.status==BLBStatus::Finished) { ++exact_finished; if(R.empty()) bcp.final_pricing_complete=true; }
+				if(ms56::remaining()<=0 || lbl_log.status==BLBStatus::TimeLimitReached) {cg_execution_log->status=CGStatus::TimeLimitReached;break;}
 
 				// Add iteration log.
 				cg_execution_log->iterations->push_back(lbl_log);
@@ -145,6 +151,7 @@ int main(int argc, char** argv)
 		auto log = bcp.Run(&solution);
 
 		output["Exact"] = log;
+		output["exact_pricing"]={{"restricted_master_infeasible",bcp.restricted_master_infeasible},{"unbranched_fractional",bcp.unbranched_fractional},{"calls",exact_calls},{"finished",exact_finished},{"cg_optimum_count",bcp.cg_optimum_count},{"certified_cg_optimum_count",bcp.certified_cg_optimum_count}};
 		output["Best solution"] = solution;
 
 		clog << "Time: " << log.time << endl;
@@ -160,7 +167,7 @@ int main(int argc, char** argv)
 		}
 
 		// Send JSON output to cout.
-		cout << output << endl;
+		ms56::emit({{"event","native_final"},{"native_result",output}});
 	}
 	catch (std::bad_alloc& e)
 	{

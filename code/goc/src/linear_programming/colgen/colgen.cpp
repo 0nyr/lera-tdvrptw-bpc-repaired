@@ -86,8 +86,10 @@ CGExecutionLog solve_colgen(Formulation* formulation,
 	// If the column generation was solved to optimality, get the actual solution.
 	if (*execution_log.status == CGStatus::Optimum)
 	{
-		lp_solver->time_limit = Duration::Max();
+		lp_solver->time_limit = time_limit-rolex.Peek();
+		if (lp_solver->time_limit <= 0.0_sec) { execution_log.status=CGStatus::TimeLimitReached; execution_log.time=rolex.Peek(); return execution_log; }
 		auto lp_log = lp_solver->Solve(formulation, {LPOption::Incumbent});
+		if (*lp_log.status != LPStatus::Optimum) { execution_log.status=parse_lp_status(*lp_log.status); execution_log.time=rolex.Peek(); return execution_log; }
 		execution_log.incumbent_value = lp_log.incumbent_value;
 		execution_log.incumbent = lp_log.incumbent;
 	}

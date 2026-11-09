@@ -24,6 +24,9 @@ public:
 	int node_limit;
 	int cut_limit;
 	BCPPricingFunction pricing_solver;
+	bool final_pricing_complete = false;
+	int cg_optimum_count = 0, certified_cg_optimum_count = 0;
+	int restricted_master_infeasible = 0, unbranched_fractional = 0;
 	
 	// Initializes the Branch cut and price solver.
 	// 	D: digraph that the VRP is based on.

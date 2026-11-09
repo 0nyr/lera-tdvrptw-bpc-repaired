@@ -5,6 +5,7 @@
 //
 
 #include <mutex>
+#include "ms56_events.h"
 
 #include "goc/collection/collection_utils.h"
 #include "goc/string/string_utils.h"
@@ -54,11 +55,26 @@ void untunnel_cplex_logs(CplexFormulation* formulation, const vector<ostream*>& 
 	cplex::delfuncdest(formulation->Environment(), log, (void*) &streams, tunnel_message);
 }
 
+void ms56_observe(CplexFormulation* formulation,const std::string& kind) {
+    static std::map<std::string,int> calls;
+    ++calls[kind];
+    if(calls[kind]!=1) return;
+    json values;
+    for(auto option: std::vector<std::pair<std::string,int>>{{"threads",CPX_PARAM_THREADS},{"lp_method",CPX_PARAM_LPMETHOD},{"presolve",CPX_PARAM_PREIND},{"reduction",CPX_PARAM_REDUCE},{"scaling",CPX_PARAM_SCAIND},{"parallel",CPX_PARAM_PARALLELMODE},{"random_seed",CPX_PARAM_RANDOMSEED}}) { int v=0; cplex::getintparam(formulation->Environment(),option.second,&v);values[option.first]=v; }
+    for(auto option: std::vector<std::pair<std::string,int>>{{"primal_feasibility",CPX_PARAM_EPRHS},{"dual_feasibility",CPX_PARAM_EPOPT},{"integrality",CPX_PARAM_EPINT},{"mip_relative_gap",CPX_PARAM_EPGAP}}) { double v=0; cplex::getdblparam(formulation->Environment(),option.second,&v);values[option.first]=v; }
+    ms56::emit({{"event","phase"},{"phase","backend_settings"},{"backend","CPLEX"},{"version",CPXversion(formulation->Environment())},{"solve_kind",kind},{"effective",values}});
+}
+
 // Applies the configuration parameters specified in the config json to CPLEX environment.
 void apply_configuration(CplexFormulation* formulation, const json& config)
 {
 	// Reset parameters of the formulation to the default values.
 	cplex::setdefaults(formulation->Environment());
+    cplex::setintparam(formulation->Environment(),CPX_PARAM_THREADS,1);
+    cplex::setdblparam(formulation->Environment(),CPX_PARAM_EPRHS,1e-7);
+    cplex::setdblparam(formulation->Environment(),CPX_PARAM_EPOPT,1e-7);
+    cplex::setdblparam(formulation->Environment(),CPX_PARAM_EPINT,1e-6);
+    cplex::setdblparam(formulation->Environment(),CPX_PARAM_EPGAP,0.0);
 	
 	// Add new parameters.
 	for (auto it_param = config.begin(); it_param != config.end(); ++it_param)
@@ -464,6 +480,7 @@ LPExecutionLog solve_lp(CplexFormulation* formulation, ostream* screen_output, D
 	
 	// Optimize.
 	Stopwatch rolex(true);
+	ms56_observe(formulation,"LP");
 	cplex::lpopt(formulation->Environment(), formulation->Problem());
 	rolex.Pause();
 	
@@ -531,6 +548,7 @@ BCExecutionLog solve_bc(CplexFormulation* formulation, ostream* screen_output, D
 	
 	// Optimize.
 	Stopwatch rolex(true);
+	ms56_observe(formulation,"MIP");
 	cplex::mipopt(formulation->Environment(), formulation->Problem());
 	rolex.Pause();
 	
