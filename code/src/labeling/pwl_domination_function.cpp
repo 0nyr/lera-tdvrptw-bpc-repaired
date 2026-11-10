@@ -130,7 +130,7 @@ bool PWLDominationFunction::DominatePieces(const PWLFunction& f2, double delta)
 				// We first create the rightmost piece [rd, max(dom(p1))].
 				// Move i1 to this piece.
 				prev_i1 = i1;
-				auto right_piece = LinearFunction({rd, p1.Value(rd)}, {p1.domain.right, p1.image.right});
+				auto right_piece = LinearFunction({rd, p1.Value(rd)}, {p1.domain.right, p1.Value(p1.domain.right)}); // ms61: was p1.image.right (maximum of the piece, wrong end for a decreasing piece)
 				i1 = AddPieceAfter(i1, right_piece);
 				
 				// Now we shrink the leftmost piece to [min(dom(p1)), ld].
