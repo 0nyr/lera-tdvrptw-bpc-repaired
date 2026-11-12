@@ -107,7 +107,7 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 			}
 			delete n;
 		}
-		if (q.empty()) z_lb = z_ub;
+		if (q.empty() && log.status == BCStatus::DidNotStart) z_lb = z_ub; // only when no limit was hit: a limit discards the nodes it interrupts, so an empty queue is then not a proof
 		
 		tstream.WriteRow({STR(rolex.Peek()), STR(log.nodes_closed), STR(log.nodes_open), STR(z_lb), STR(z_ub), STR(spf->formulation->VariableCount())});
 		
