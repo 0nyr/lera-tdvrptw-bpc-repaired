@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the article of Lera-Romero, Miranda Bront and Soulignac below, which describes the algorithm and the original code. You may also cite this repository for the repairs."
+title: "lera-tdvrptw-bpc-repaired: the branch-price-and-cut of Lera-Romero, Miranda-Bront and Soulignac for the TDVRPTW, with repairs"
+type: software
+version: 1.0.0
+license: MIT
+repository-code: "https://github.com/0nyr/lera-tdvrptw-bpc-repaired"
+authors:
+  - given-names: Gonzalo
+    family-names: Lera-Romero
+  - given-names: Juan José
+    family-names: Miranda-Bront
+  - given-names: Francisco
+    family-names: Soulignac
+  - given-names: Florian
+    family-names: Rascoussier
+    email: onyr.maintainer@gmail.com
+keywords:
+  - time-dependent vehicle routing
+  - time windows
+  - branch-price-and-cut
+  - labeling algorithm
+preferred-citation:
+  type: article
+  title: "Linear edge costs and labeling algorithms: The case of the time-dependent vehicle routing problem with time windows"
+  authors:
+    - given-names: Gonzalo
+      family-names: Lera-Romero
+    - given-names: Juan J.
+      family-names: Miranda Bront
+    - given-names: Francisco J.
+      family-names: Soulignac
+  journal: Networks
+  publisher:
+    name: Wiley
+  volume: 76
+  issue: 1
+  start: 24
+  end: 53
+  year: 2020
+  doi: 10.1002/net.21937
