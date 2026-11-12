@@ -59,6 +59,7 @@ void apply_configuration(CplexFormulation* formulation, const json& config)
 {
 	// Reset parameters of the formulation to the default values.
 	cplex::setdefaults(formulation->Environment());
+	cplex::setintparam(formulation->Environment(), CPX_PARAM_THREADS, 1); // 1 thread: with the default, CPLEX 12.10 ran concurrent LP optimizers on a 20-thread machine and some LP solves returned without a solution, which the code does not handle
 	
 	// Add new parameters.
 	for (auto it_param = config.begin(); it_param != config.end(); ++it_param)
