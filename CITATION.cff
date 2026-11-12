@@ -1,8 +1,9 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite the article of Lera-Romero, Miranda Bront and Soulignac below, which describes the algorithm and the original code. You may also cite this repository for the repairs."
+message: "If you use this software, please cite the article of Lera-Romero, Miranda Bront and Soulignac below, which describes the algorithm and the original code. You may also cite this repository for its changes."
 title: "lera-tdvrptw-bpc-repaired: the branch-price-and-cut of Lera-Romero, Miranda-Bront and Soulignac for the TDVRPTW, with repairs"
 type: software
 version: 1.0.0
+date-released: "2026-11-12"
 license: MIT
 repository-code: "https://github.com/0nyr/lera-tdvrptw-bpc-repaired"
 authors:
