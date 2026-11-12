@@ -1,0 +1,38 @@
+{
+  "datasets": [
+    {
+      "name": "dabia_et_al_2013",
+      "select": "N25"
+    }
+  ],
+  "experiments": [
+    {
+      "name": "BP-PART",
+      "executable": "bp",
+      "time_limit": 20,
+      "cut_limit": 0,
+      "partial": true,
+      "limited_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": false,
+      "iterative_merge": true,
+      "lazy_extension": true,
+      "exact_labeling": true
+    },
+    {
+      "name": "BP-CUTS",
+      "executable": "bp",
+      "time_limit": 20,
+      "cut_limit": 500,
+      "partial": true,
+      "limited_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": false,
+      "iterative_merge": true,
+      "lazy_extension": true,
+      "exact_labeling": true
+    }
+  ]
+}
