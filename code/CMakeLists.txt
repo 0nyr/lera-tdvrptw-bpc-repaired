@@ -28,3 +28,7 @@ target_link_libraries(pricing networks2019)
 
 add_executable(bp src/main_bp.cpp)
 target_link_libraries(bp networks2019)
+
+# Regression test of partial dominance on a decreasing piece. Not part of the default build: make test_partial_dominance
+add_executable(test_partial_dominance EXCLUDE_FROM_ALL tests/test_partial_dominance.cpp)
+target_link_libraries(test_partial_dominance networks2019)

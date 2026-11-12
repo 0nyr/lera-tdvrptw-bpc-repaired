@@ -31,7 +31,7 @@ def run_program(bin, input_string="", memlim_gb=1024, silent=False):
 	# Function that sets limit on memory when executable starts.
 	def set_memory_limit():
 		soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-		resource.setrlimit(resource.RLIMIT_AS, (memlim_gb*1024*1024*1024, hard))
+		resource.setrlimit(resource.RLIMIT_AS, (int(memlim_gb*1024*1024*1024), hard))
 
 	t_start = datetime.datetime.now()
 	process = subprocess.Popen(bin, stderr=subprocess.PIPE, stdout=subprocess.PIPE, stdin=subprocess.PIPE, preexec_fn=set_memory_limit, universal_newlines = True)
@@ -185,6 +185,7 @@ def run_experiment(experiment, instance, solutions):
 def main():
 	# Compile project.
 	if not compile(): exit(0)
+	create_dir(OUTPUT_DIR)
 
 	# Run experiment files.
 	for experiment_file in experiment_files:
