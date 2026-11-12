@@ -2,7 +2,7 @@
 
 This repository holds the Branch-Price-and-Cut (BPC) solver for the Time-Dependent Vehicle Routing Problem with Time Windows (TDVRPTW) of Gonzalo Lera-Romero, Juan José Miranda-Bront and Francisco Soulignac, described in the article [Linear edge costs and labeling algorithms: The case of the time-dependent vehicle routing problem with time windows](https://doi.org/10.1002/net.21937) (Networks 76(1):24-53, 2020), with 4 changes of 1 line each to the solver. 2 of them repair the labeling algorithm, 1 guards the lower bound reported after a limit, and 1 sets CPLEX to 1 thread. The original code is the public repository https://github.com/gleraromero/networks2020 (MIT license), whose head commit `cabc56a` is the base of this repository and stays in its history unchanged.
 
-We found the repairs while working on KAYROS (https://github.com/0nyr/kayros), a solver whose exact component derives from this code. This repository is not affiliated with, and not endorsed by, the authors of the original code. If you use it, please cite their article first (see [Citation](#citation)).
+We found the repairs while working on KAYROS (https://github.com/0nyr/kayros), a solver whose exact component derives from this code. This repository is not affiliated with, and not endorsed by, the authors of the original code. If you use it, please cite this repository, the original repository and their article (see [Citation](#citation)).
 
 The original README states that its code "is not the exact version executed for the article" and was "improved for readibility". The same holds here, and we do not claim that this repository reproduces the times of the article.
 
@@ -119,6 +119,8 @@ It prints `PASS` and exits with code 0 on `main`. With the original line of `Dom
 
 ## Validation of v1.0.0
 
+Versions after 1.0.0 that change the documentation only, such as 1.0.1, have the same solver code, so this validation applies to them unchanged.
+
 All runs below were made on one Linux machine with 20 hardware threads, GCC 15.2.0, CMake 4.1.2 (with `CMAKE_POLICY_VERSION_MINIMUM=3.5`), CPLEX 12.10.0.0, Boost 1.89 and Python 3.13, each build from a separate copy of the sources. The 2 experiments were run through `python3 runner/runner.py`, and the sweep of time limits called the `bp` executable built by the runner directly. We compare `main` with 3 other builds.
 
 - The *original* build is the commit `cabc56a` with its solver code unchanged. The original runner fails at its first run with Python 3.13 and does not create its output directory, so this copy used the 1-line memory-limit fix of the runner of `main` and an output directory created by hand.
@@ -177,15 +179,15 @@ In the study, this baseline ran the `BP-CUTS` configuration on the 56 Dabia inst
 
 ## Citation
 
-Please cite the article of the original authors first.
+If you use this repository, please cite these 3 items.
 
-> Lera-Romero, G., Miranda Bront, J. J. and Soulignac, F. J. (2020). Linear edge costs and labeling algorithms: The case of the time-dependent vehicle routing problem with time windows. Networks 76(1):24-53. https://doi.org/10.1002/net.21937
-
-If you use the changes of this repository, you may also cite it, using `CITATION.cff`.
+1. This repository. Lera-Romero, G., Miranda-Bront, J. J., Soulignac, F. and Rascoussier, F. (2026). lera-tdvrptw-bpc-repaired: the branch-price-and-cut of Lera-Romero, Miranda-Bront and Soulignac for the TDVRPTW, with repairs. https://github.com/0nyr/lera-tdvrptw-bpc-repaired. Give the version you used. `CITATION.cff` holds this metadata, which GitHub exposes through the "Cite this repository" button.
+2. The original repository. Lera-Romero, G., Miranda-Bront, J. J. and Soulignac, F. (2020). networks2020. https://github.com/gleraromero/networks2020, commit `cabc56a`.
+3. The article. Lera-Romero, G., Miranda Bront, J. J. and Soulignac, F. J. (2020). Linear edge costs and labeling algorithms: The case of the time-dependent vehicle routing problem with time windows. Networks 76(1):24-53. https://doi.org/10.1002/net.21937
 
 ## Authors
 
-See `AUTHORS`. The original code is by Gonzalo Lera-Romero, Juan José Miranda-Bront and Francisco Soulignac. The changes, the tests and the maintenance of this repository are by Florian Rascoussier (onyr.maintainer@gmail.com).
+The authors of this program are Gonzalo Lera-Romero, Juan José Miranda-Bront, Francisco Soulignac and Florian Rascoussier (see `AUTHORS`). The first 3 wrote the original code. Florian Rascoussier (onyr.maintainer@gmail.com) made the changes of this repository, wrote its tests and maintains it.
 
 The original code uses [JSON for Modern C++](https://github.com/nlohmann/json) and the [Boost Graph Library](https://www.boost.org/doc/libs/1_66_0/libs/graph/doc/index.html).
 

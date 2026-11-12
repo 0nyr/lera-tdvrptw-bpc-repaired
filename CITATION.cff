@@ -1,8 +1,8 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite the article of Lera-Romero, Miranda Bront and Soulignac below, which describes the algorithm and the original code. You may also cite this repository for its changes."
+message: "If you use this software, please cite this repository, the original repository of Lera-Romero, Miranda-Bront and Soulignac, and their article. The 2 latter are listed under references."
 title: "lera-tdvrptw-bpc-repaired: the branch-price-and-cut of Lera-Romero, Miranda-Bront and Soulignac for the TDVRPTW, with repairs"
 type: software
-version: 1.0.0
+version: 1.0.1
 date-released: "2026-11-12"
 license: MIT
 repository-code: "https://github.com/0nyr/lera-tdvrptw-bpc-repaired"
@@ -21,22 +21,35 @@ keywords:
   - time windows
   - branch-price-and-cut
   - labeling algorithm
-preferred-citation:
-  type: article
-  title: "Linear edge costs and labeling algorithms: The case of the time-dependent vehicle routing problem with time windows"
-  authors:
-    - given-names: Gonzalo
-      family-names: Lera-Romero
-    - given-names: Juan J.
-      family-names: Miranda Bront
-    - given-names: Francisco J.
-      family-names: Soulignac
-  journal: Networks
-  publisher:
-    name: Wiley
-  volume: 76
-  issue: 1
-  start: 24
-  end: 53
-  year: 2020
-  doi: 10.1002/net.21937
+references:
+  - type: software
+    title: "networks2020: source code of the article Linear edge costs and labeling algorithms: The case of the time-dependent vehicle routing problem with time windows"
+    authors:
+      - given-names: Gonzalo
+        family-names: Lera-Romero
+      - given-names: Juan José
+        family-names: Miranda-Bront
+      - given-names: Francisco
+        family-names: Soulignac
+    repository-code: "https://github.com/gleraromero/networks2020"
+    commit: cabc56ad9cdb22bed81a8a31f1671d40152055e6
+    license: MIT
+    year: 2020
+  - type: article
+    title: "Linear edge costs and labeling algorithms: The case of the time-dependent vehicle routing problem with time windows"
+    authors:
+      - given-names: Gonzalo
+        family-names: Lera-Romero
+      - given-names: Juan J.
+        family-names: Miranda Bront
+      - given-names: Francisco J.
+        family-names: Soulignac
+    journal: Networks
+    publisher:
+      name: Wiley
+    volume: 76
+    issue: 1
+    start: 24
+    end: 53
+    year: 2020
+    doi: 10.1002/net.21937

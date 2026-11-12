@@ -2,6 +2,15 @@
 
 All notable changes of this repository with respect to the original code of Lera-Romero, Miranda-Bront and Soulignac (https://github.com/gleraromero/networks2020, commit `cabc56a`) are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.1] - 2026-11-12
+
+Documentation and citation metadata only. The solver code is unchanged, and results are those of 1.0.0.
+
+### Changed
+
+- **Citation.** `CITATION.cff` no longer declares the article as the preferred citation. It describes this repository, with its 4 authors, and lists the original repository and the article as references. The README asks users to cite the 3 items.
+- **Authors.** `AUTHORS` and the README give one list of 4 authors, the 3 authors of the original code and Florian Rascoussier, with what each wrote.
+
 ## [1.0.0] - 2026-11-12
 
 First release of this repository. The solver is the original code with 4 changes of 1 line each: 2 repairs of the labeling algorithm, a guard on the lower bound reported after a limit, and CPLEX set to 1 thread.
@@ -29,4 +38,5 @@ First release of this repository. The solver is the original code with 4 changes
 
 The known limitations listed in `README.md` are unchanged from the original code. Among them, the time limit is not enforced in every loop, the dual values are read without checking that the LP has a solution, and the label-correction step itself is not repaired.
 
+[1.0.1]: https://github.com/0nyr/lera-tdvrptw-bpc-repaired/releases/tag/v1.0.1
 [1.0.0]: https://github.com/0nyr/lera-tdvrptw-bpc-repaired/releases/tag/v1.0.0

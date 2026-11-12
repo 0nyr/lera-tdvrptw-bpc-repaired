@@ -1,11 +1,10 @@
-Authors of the original code (https://github.com/gleraromero/networks2020), described in the article https://doi.org/10.1002/net.21937:
+Authors of this program:
 
 - Gonzalo Lera-Romero
 - Juan José Miranda-Bront
 - Francisco Soulignac
-
-Repairs, tests and maintenance of this repository:
-
 - Florian Rascoussier <onyr.maintainer@gmail.com>
+
+Gonzalo Lera-Romero, Juan José Miranda-Bront and Francisco Soulignac wrote the original code (https://github.com/gleraromero/networks2020), described in the article https://doi.org/10.1002/net.21937. Florian Rascoussier made the changes of this repository, wrote its tests and maintains it.
 
 This repository is not affiliated with, and not endorsed by, the authors of the original code.
